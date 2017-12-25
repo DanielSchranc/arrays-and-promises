@@ -21,13 +21,14 @@ function handleArrFlattening(arr, prop) {
 }
 
 function getCarsByUserId(id) {
-	const uid = 123;
+	const uid1 = 123;
+	const uid2 = 456;
 	const CustomError = 'No user id arguments provided...';
 
 	return new Promise((resolve, reject) => {
 		if (!id) {
 			reject(CustomError);
-		} else if (id === uid) {
+		} else if (id === uid1) {
 			setTimeout(() => {
 				resolve([
 					{id: 1, name: 'McLaren'},
@@ -35,7 +36,7 @@ function getCarsByUserId(id) {
 					{id: 3, name: 'Lamborghini'}
 				]);
 			}, 250);
-		} else {
+		} else if (id === uid2) {
 			setTimeout(() => {
 				resolve([
 					{id: 4, name: 'Ferrari'},
@@ -43,6 +44,10 @@ function getCarsByUserId(id) {
 					{id: 8, name: 'Aston Martin'}
 				]);
 			}, 250);
+		} else {
+			setTimeout(() => {
+				resolve([]);
+			}, 2050);
 		}
 	});
 }
@@ -90,17 +95,20 @@ function handleUserCars(user, count) {
 	const CustomError = 'Couldn\'t process request, so here\'s custom error';
 
 	return new Promise((resolve, reject) => {
-		if (count === undefined || count === null || count === 0) {
+		if (!count && count !== 'none') {
 			return reject(CustomError);
 		}
 		return getAllCarsForUser(user)
-			.then((result) => {
-				if (result[0].length >= count) {
-					let flattenArrByUser = flatMap(result[0], 'name');
+			.then((allCars) => {
+				const userCars = allCars[0];
+				const popularCars = allCars[1];
+
+				if (userCars.length >= count) {
+					let flattenArrByUser = flatMap(userCars, 'name');
 					resolve(flattenArrByUser);
 
-				} else if (result[0].length < count) {
-					let filteredArr = filterDuplicates(handleArrFlattening(result, 'name'));
+				} else if (userCars.length < count) {
+					let filteredArr = filterDuplicates(handleArrFlattening(allCars, 'name'));
 					if (filteredArr.length < count) {
 						reject(CustomError);
 					} else {
@@ -108,11 +116,31 @@ function handleUserCars(user, count) {
 						resolve(arrToResolve);
 					}
 
-				}  else if (result[0].length === 0) {
-					let flattenArrByGender = flatMap(result[1], 'name');
+				}  else if (!userCars.length) {
+					let flattenArrByGender = flatMap(popularCars, 'name');
 					resolve(flattenArrByGender);
 				}
 			})
 			.catch((error) => reject(CustomError));
 	});
 }
+
+const maleUser = {
+	id: 123,
+	gender: 'male'
+};
+
+const femaleUser = {
+	id: 456,
+	gender: 'female'
+}
+
+const newUserMale = {
+	id: 789,
+	gender: 'male'
+};
+
+const newUserFemale = {
+	id: 111,
+	gender: 'female'
+};
